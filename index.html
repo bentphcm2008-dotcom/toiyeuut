@@ -524,7 +524,6 @@ Ví dụ:
         resultCard.style.display = 'block';
 
         eventsList.forEach((item, index) => {
-            // Đã đổi định dạng tiêu đề thành: Tên môn - [Loại thi]
             const title = formatTitle(item.subjectName, item.examType);
             const location = `Phòng ${item.room}, ${item.campus}`;
 
@@ -565,7 +564,6 @@ Ví dụ:
         ];
 
         eventsList.forEach((item, idx) => {
-            // Tiêu đề trong file ICS cũng đổi theo dạng Tên môn - [Loại thi]
             const title = formatTitle(item.subjectName, item.examType);
             const location = `Phòng ${item.room}, ${item.campus}`;
             const description = `MÃ PHÒNG: ${item.room}\\nCơ sở: ${item.campus}\\nNhóm/Loại: ${item.group}\\nThời lượng: ${item.duration} phút\\nGhi chú: Loại thi: ${item.examType} - Nhóm: ${item.group}`;
