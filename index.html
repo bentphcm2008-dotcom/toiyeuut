@@ -36,7 +36,7 @@
 
         .container {
             width: 100%;
-            max-width: 900px;
+            max-width: 980px;
         }
 
         .header {
@@ -101,7 +101,7 @@
 
         textarea, input, select {
             width: 100%;
-            padding: 12px;
+            padding: 10px 12px;
             border: 1.5px solid var(--border-color);
             border-radius: 8px;
             font-size: 0.9rem;
@@ -114,7 +114,7 @@
         }
 
         textarea {
-            height: 140px;
+            height: 120px;
             resize: vertical;
             font-family: monospace;
             white-space: pre;
@@ -122,7 +122,7 @@
 
         .btn-group {
             display: flex;
-            gap: 12px;
+            gap: 10px;
             flex-wrap: wrap;
         }
 
@@ -130,27 +130,23 @@
             background-color: var(--primary);
             color: white;
             border: none;
-            padding: 10px 18px;
+            padding: 10px 16px;
             border-radius: 6px;
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 0.875rem;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            transition: background 0.2s;
+            transition: opacity 0.2s;
         }
 
         .btn:hover {
-            background-color: var(--primary-hover);
+            opacity: 0.9;
         }
 
         .btn-success {
             background-color: var(--accent-green);
-        }
-
-        .btn-success:hover {
-            background-color: #2e986b;
         }
 
         .btn-outline {
@@ -172,13 +168,14 @@
 
         .event-item {
             border: 1px solid var(--border-color);
-            border-left: 5px solid var(--primary);
+            border-left: 6px solid var(--item-color, #0052cc);
             border-radius: 8px;
             padding: 16px;
             background-color: white;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 12px;
         }
 
         .event-info h4 {
@@ -210,6 +207,27 @@
             font-weight: 700;
         }
 
+        .color-palette-bar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .color-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: transform 0.15s, border-color 0.15s;
+        }
+
+        .color-dot:hover, .color-dot.active {
+            transform: scale(1.2);
+            border-color: #172b4d;
+        }
+
         .alert-info {
             background-color: var(--primary-light);
             color: var(--primary);
@@ -224,7 +242,7 @@
 
         .form-row {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 12px;
             margin-bottom: 12px;
         }
@@ -232,6 +250,7 @@
         .action-btns {
             display: flex;
             gap: 8px;
+            align-items: center;
         }
 
         .btn-icon {
@@ -258,7 +277,7 @@
             <i class="fa-solid fa-calendar-days fa-2x"></i>
             <div>
                 <h1>BKalendar Pro</h1>
-                <p>Công cụ trích xuất Lịch thi & TKB Bách Khoa HCMUT chính xác nhất</p>
+                <p>Công cụ trích xuất Lịch thi & TKB Bách Khoa HCMUT chuẩn định dạng</p>
             </div>
         </div>
     </div>
@@ -271,12 +290,12 @@
         </div>
         <div class="alert-info">
             <i class="fa-solid fa-circle-info"></i>
-            Mở MyBK -> Ctrl + A -> Ctrl + C lịch thi / TKB -> Dán (Ctrl + V) vào ô bên dưới. Hệ thống sẽ <b>tự động phân tích 1 lần và lọc bỏ trùng lặp</b>.
+            Mở MyBK -> Ctrl + A -> Ctrl + C lịch thi / TKB -> Dán (Ctrl + V) vào ô bên dưới.
         </div>
         <div class="input-group">
             <textarea id="rawInput" placeholder="Dán văn bản lịch từ MyBK vào đây...
 Ví dụ:
-20261   MT1007 - Đại số Tuyến tính   L04_A_Ktr   2026-10-12   GK   BK-CS2   H3-401   2   13g00   50"></textarea>
+20261	MT1007 - Đại số Tuyến tính	L04_A_Ktr	2026-10-12	GK	BK-CS2	H3-401	2	13g00	50"></textarea>
         </div>
         <div class="btn-group">
             <button class="btn" onclick="parseMyBKData()"><i class="fa-solid fa-wand-magic-sparkles"></i> Phân tích ngay</button>
@@ -293,7 +312,7 @@ Ví dụ:
         <div class="form-row">
             <div>
                 <label>Học kỳ</label>
-                <input type="text" id="customTerm" value="261">
+                <input type="text" id="customTerm" value="20261">
             </div>
             <div>
                 <label>Mã & Tên môn học</label>
@@ -341,10 +360,16 @@ Ví dụ:
 
     <!-- Danh Sách & Xuất File -->
     <div class="card" id="resultCard" style="display:none;">
-        <div class="card-title" style="justify-content: space-between;">
+        <div class="card-title" style="justify-content: space-between; flex-wrap: wrap; gap: 10px;">
             <span><i class="fa-solid fa-list-check"></i> Danh sách sự kiện (<span id="eventCount">0</span>)</span>
             <div class="btn-group">
-                <button class="btn btn-success" onclick="downloadAllICS()"><i class="fa-solid fa-file-arrow-down"></i> Tải về 1 File .ICS (Tất cả)</button>
+                <button class="btn btn-outline" onclick="randomizeColors()"><i class="fa-solid fa-shuffle"></i> Random màu</button>
+                <button class="btn" style="background-color: #0052cc;" onclick="syncAllGoogleCalendar()">
+                    <i class="fa-brands fa-google"></i> Mở tất cả vào GG Calendar
+                </button>
+                <button class="btn btn-success" onclick="downloadAllICS()">
+                    <i class="fa-solid fa-file-arrow-down"></i> Tải file .ICS
+                </button>
             </div>
         </div>
 
@@ -355,7 +380,21 @@ Ví dụ:
 <script>
     let eventsList = [];
 
-    // Map loại thi sang dạng văn bản
+    // Danh sách bảng màu chuẩn Google Calendar
+    const GOOGLE_COLORS = [
+        { id: '1', hex: '#7986cb', name: 'Lavender' },
+        { id: '2', hex: '#33b679', name: 'Sage' },
+        { id: '3', hex: '#8e24aa', name: 'Grape' },
+        { id: '4', hex: '#e67c73', name: 'Flamingo' },
+        { id: '5', hex: '#f6bf26', name: 'Banana' },
+        { id: '6', hex: '#f4511e', name: 'Tangerine' },
+        { id: '7', hex: '#039be5', name: 'Peacock' },
+        { id: '8', hex: '#616161', name: 'Graphite' },
+        { id: '9', hex: '#3f51b5', name: 'Blueberry' },
+        { id: '10', hex: '#0b8043', name: 'Basil' },
+        { id: '11', hex: '#d50000', name: 'Tomato' }
+    ];
+
     function getExamTypeFull(type) {
         if (!type) return "Thi";
         const t = type.toUpperCase().trim();
@@ -365,7 +404,10 @@ Ví dụ:
         return `Thi ${t}`;
     }
 
-    // Phân tích dữ liệu 1 lần & Lọc trùng
+    function getRandomColor() {
+        return GOOGLE_COLORS[Math.floor(Math.random() * GOOGLE_COLORS.length)];
+    }
+
     function parseMyBKData() {
         const rawText = document.getElementById('rawInput').value.trim();
         if (!rawText) {
@@ -378,15 +420,12 @@ Ví dụ:
         let skippedCount = 0;
         const seenKeys = new Set();
 
-        // Thêm các sự kiện hiện có vào hash map để tránh trùng
         eventsList.forEach(e => seenKeys.add(e.uniqueKey));
 
         lines.forEach(line => {
             line = line.trim();
             if (!line) return;
 
-            // Regex hỗ trợ dòng lịch thi MyBK
-            // Cấu trúc: [Học kỳ] [Môn] [Nhóm] [Ngày] [Loại thi] [Cơ sở] [Phòng] [Thứ] [Giờ] [Phút]
             const examMatch = line.match(/^(\d+)\s+([A-Z0-9]+\s*-\s*[^	\n]+?)\s+([A-Z0-9_]+)\s+(\d{4}-\d{2}-\d{2})\s+([A-Za-z0-9]+)\s+([A-Za-z0-9-]+)\s+([A-Za-z0-9-]+)\s+(\d+)\s+(\d{1,2}g\d{2}|\d{1,2}:\d{2})\s+(\d+)/i);
 
             if (examMatch) {
@@ -400,18 +439,16 @@ Ví dụ:
                 const timeStr = examMatch[9].replace('g', ':');
                 const duration = parseInt(examMatch[10]) || 50;
 
-                // Tạo Unique Key để lọc trùng
                 const uniqueKey = `${subject}_${date}_${timeStr}_${room}_${examType}`.toLowerCase();
 
                 if (seenKeys.has(uniqueKey)) {
                     skippedCount++;
-                    return; // Bỏ qua nếu trùng
+                    return;
                 }
 
                 seenKeys.add(uniqueKey);
                 addedCount++;
 
-                // Tách mã môn và tên môn
                 const subParts = subject.split('-');
                 const subCode = subParts[0] ? subParts[0].trim() : "";
                 const subName = subParts[1] ? subParts[1].trim() : subject;
@@ -428,7 +465,8 @@ Ví dụ:
                     campus: campus,
                     room: room,
                     time: timeStr.length === 4 ? '0' + timeStr : timeStr,
-                    duration: duration
+                    duration: duration,
+                    color: getRandomColor()
                 });
             }
         });
@@ -436,12 +474,11 @@ Ví dụ:
         if (addedCount === 0 && skippedCount === 0) {
             alert('Không tìm thấy dòng dữ liệu lịch thi phù hợp. Vui lòng kiểm tra lại định dạng!');
         } else {
-            alert(`Đã thêm thành công ${addedCount} môn thi!` + (skippedCount > 0 ? ` (Đã tự động lọc bỏ ${skippedCount} bản ghi bị lặp)` : ''));
+            alert(`Đã thêm thành công ${addedCount} môn thi!` + (skippedCount > 0 ? ` (Tự động lọc bỏ ${skippedCount} dòng bị trùng)` : ''));
             renderEvents();
         }
     }
 
-    // Thêm môn thủ công
     function addCustomEvent() {
         const term = document.getElementById('customTerm').value.trim();
         const subject = document.getElementById('customSubject').value.trim();
@@ -476,26 +513,36 @@ Ví dụ:
             campus: campus,
             room: room,
             time: time,
-            duration: duration
+            duration: duration,
+            color: getRandomColor()
         });
 
         renderEvents();
     }
 
-    // Xóa 1 môn khỏi danh sách
+    function changeEventColor(eventIndex, colorObj) {
+        eventsList[eventIndex].color = colorObj;
+        renderEvents();
+    }
+
+    function randomizeColors() {
+        eventsList.forEach(e => {
+            e.color = getRandomColor();
+        });
+        renderEvents();
+    }
+
     function removeEvent(index) {
         eventsList.splice(index, 1);
         renderEvents();
     }
 
-    // Xóa toàn bộ
     function clearData() {
         document.getElementById('rawInput').value = '';
         eventsList = [];
         renderEvents();
     }
 
-    // Hiển thị danh sách ra UI
     function renderEvents() {
         const listEl = document.getElementById('eventList');
         const countEl = document.getElementById('eventCount');
@@ -517,6 +564,17 @@ Ví dụ:
 
             const itemEl = document.createElement('div');
             itemEl.className = 'event-item';
+            itemEl.style.setProperty('--item-color', item.color.hex);
+            
+            // Render dải màu chọn
+            let colorDotsHTML = GOOGLE_COLORS.map(c => 
+                `<div class="color-dot ${c.hex === item.color.hex ? 'active' : ''}" 
+                      style="background-color: ${c.hex};" 
+                      title="${c.name}"
+                      onclick="changeEventColor(${index}, {id:'${c.id}', hex:'${c.hex}', name:'${c.name}'})">
+                 </div>`
+            ).join('');
+
             itemEl.innerHTML = `
                 <div class="event-info">
                     <h4>${title}</h4>
@@ -524,7 +582,11 @@ Ví dụ:
                         <span><i class="fa-regular fa-calendar"></i> ${item.date}</span>
                         <span><i class="fa-regular fa-clock"></i> ${item.time} (${item.duration} phút)</span>
                         <span><i class="fa-solid fa-location-dot"></i> ${location}</span>
-                        <span class="badge">${item.group || 'N/A'}</span>
+                        <span class="badge" style="background:${item.color.hex}22; color:${item.color.hex}">${item.group || 'N/A'}</span>
+                    </div>
+                    <div class="color-palette-bar">
+                        <span style="font-size:0.75rem; color:var(--text-sub); margin-right:4px;">Màu lịch:</span>
+                        ${colorDotsHTML}
                     </div>
                 </div>
                 <div class="action-btns">
@@ -538,30 +600,41 @@ Ví dụ:
         });
     }
 
-    // Đồng bộ 1 sự kiện vào Google Calendar
-    function syncSingleGoogleCalendar(index) {
-        const item = eventsList[index];
+    function getGoogleCalendarUrl(item) {
         const title = `[${getExamTypeFull(item.examType)} ${item.term}] ${item.fullSubject}`;
         const location = `Phòng ${item.room}, ${item.campus}`;
         
-        const description = `mã môn học: ${item.subjectCode}\ntín chỉ: N/A\ntín chỉ học phí: N/A\nnhóm tổ: ${item.group}\nloại thi: ${item.examType}\nthời lượng: ${item.duration} phút`;
+        // Sửa lỗi hiển thị \n bằng việc dùng ký tự xuống dòng thực tế
+        const description = `MÃ PHÒNG: ${item.room}\nCơ sở: ${item.campus}\nNhóm/Loại: ${item.group}\nThời lượng: ${item.duration} phút\nGhi chú: Loại thi: ${getExamTypeFull(item.examType)} - Nhóm: ${item.group}`;
 
-        // Đổi thời gian sang định dạng ISO cho Google URL
         const startDT = new Date(`${item.date}T${item.time}:00`);
         const endDT = new Date(startDT.getTime() + item.duration * 60000);
 
         const formatGTime = (date) => date.toISOString().replace(/-|:|\.\d\d\d/g, "");
 
-        const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE` +
+        return `https://calendar.google.com/calendar/render?action=TEMPLATE` +
             `&text=${encodeURIComponent(title)}` +
             `&dates=${formatGTime(startDT)}/${formatGTime(endDT)}` +
             `&details=${encodeURIComponent(description)}` +
             `&location=${encodeURIComponent(location)}`;
-
-        window.open(googleUrl, '_blank');
     }
 
-    // Tải về 1 file ICS chứa tất cả môn học (KHÔNG LẶP)
+    function syncSingleGoogleCalendar(index) {
+        const url = getGoogleCalendarUrl(eventsList[index]);
+        window.open(url, '_blank');
+    }
+
+    function syncAllGoogleCalendar() {
+        if (eventsList.length === 0) return;
+
+        if (confirm(`Bạn có chắc muốn mở ${eventsList.length} tab Google Calendar để lưu tất cả môn học cùng lúc không?\n\n(Lưu ý: Nếu trình duyệt chặn cửa sổ bật lên (Pop-up), vui lòng chọn "Cho phép" ở góc địa chỉ trình duyệt nhé!)`)) {
+            eventsList.forEach(item => {
+                const url = getGoogleCalendarUrl(item);
+                window.open(url, '_blank');
+            });
+        }
+    }
+
     function downloadAllICS() {
         if (eventsList.length === 0) return;
 
@@ -576,7 +649,8 @@ Ví dụ:
         eventsList.forEach((item, idx) => {
             const title = `[${getExamTypeFull(item.examType)} ${item.term}] ${item.fullSubject}`;
             const location = `Phòng ${item.room}, ${item.campus}`;
-            const description = `mã môn học: ${item.subjectCode}\\ntín chỉ: N/A\\ntín chỉ học phí: N/A\\nnhóm tổ: ${item.group}\\nloại thi: ${item.examType}\\nthời lượng: ${item.duration} phút`;
+            // Sửa định dạng xuống dòng chuẩn trong file ICS (\n)
+            const description = `MÃ PHÒNG: ${item.room}\\nCơ sở: ${item.campus}\\nNhóm/Loại: ${item.group}\\nThời lượng: ${item.duration} phút\\nGhi chú: Loại thi: ${getExamTypeFull(item.examType)} - Nhóm: ${item.group}`;
 
             const startDT = new Date(`${item.date}T${item.time}:00`);
             const endDT = new Date(startDT.getTime() + item.duration * 60000);
