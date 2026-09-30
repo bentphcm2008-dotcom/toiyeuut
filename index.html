@@ -119,8 +119,8 @@
     };
 
     function handleAuthClick() {
-        const CLIENT_ID = "276989030384-j2koip88222r3p6qi1q3lq3sffvu33qt.apps.googleusercontent.com";
-        const API_KEY = "AIzaSyDlNKMUgTuoYSRmnkTKN0PlpvK2LjElSNk";
+        const CLIENT_ID = document.getElementById('clientId').value.trim();
+        const API_KEY = document.getElementById('apiKey').value.trim();
 
         if(!CLIENT_ID || !API_KEY) {
             alert('Vui lòng nhập OAuth Client ID và API Key trước!');
