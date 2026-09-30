@@ -3,194 +3,611 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BKalendar Pro - Đồng bộ Google Calendar API</title>
+    <title>BKalendar Pro - Trích xuất Lịch Bách Khoa HCMUT</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <!-- Google Identity & API Script -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="https://apis.google.com/js/api.js" async defer></script>
-
     <style>
-        body { font-family: sans-serif; background: #f4f7fb; padding: 20px; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 800px; background: white; padding: 24px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .btn { background: #0052cc; color: white; padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .btn-google { background: #4285f4; }
-        .form-group { margin-bottom: 12px; }
-        label { display: block; font-size: 0.85rem; margin-bottom: 4px; font-weight: bold; }
-        input, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px; }
-        .color-picker { display: flex; gap: 8px; margin-top: 8px; }
-        .color-box { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
-        .color-box.selected { border-color: #000; transform: scale(1.1); }
-        .status { margin-top: 15px; padding: 10px; background: #e6f0ff; color: #0052cc; border-radius: 6px; font-size: 0.9rem; }
+        :root {
+            --primary: #0052cc;
+            --primary-hover: #0041a3;
+            --primary-light: #e6f0ff;
+            --bg-color: #f4f7fb;
+            --card-bg: #ffffff;
+            --text-main: #172b4d;
+            --text-sub: #5e6c84;
+            --border-color: #dfe1e6;
+            --accent-green: #36b37e;
+            --accent-red: #ff5630;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 980px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0052cc, #0747a6);
+            color: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,82,204,0.15);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 0.875rem;
+            opacity: 0.85;
+            margin-top: 4px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-sub);
+        }
+
+        textarea, input, select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        textarea:focus, input:focus, select:focus {
+            border-color: var(--primary);
+        }
+
+        textarea {
+            height: 120px;
+            resize: vertical;
+            font-family: monospace;
+            white-space: pre;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: opacity 0.2s;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn-success {
+            background-color: var(--accent-green);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--primary);
+            border: 1.5px solid var(--primary);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--primary-light);
+        }
+
+        .event-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .event-item {
+            border: 1px solid var(--border-color);
+            border-left: 6px solid #0052cc;
+            border-radius: 8px;
+            padding: 16px;
+            background-color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .event-info h4 {
+            font-size: 1rem;
+            color: var(--text-main);
+            margin-bottom: 6px;
+        }
+
+        .event-meta {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .event-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .badge {
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .alert-info {
+            background-color: var(--primary-light);
+            color: var(--primary);
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sync-box {
+            background-color: #f7fafc;
+            border: 1px dashed #cbd5e0;
+            padding: 14px;
+            border-radius: 8px;
+            margin-top: 12px;
+            font-size: 0.85rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .btn-icon {
+            background: none;
+            border: none;
+            color: var(--text-sub);
+            cursor: pointer;
+            padding: 6px;
+            font-size: 1rem;
+            border-radius: 4px;
+        }
+
+        .btn-icon:hover {
+            color: var(--accent-red);
+            background: #ffebe6;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>BKalendar Pro - Đồng bộ Màu Trực Tiếp</h2>
-    <p style="color: #666; font-size: 0.875rem; margin-bottom: 20px;">Đồng bộ lịch thi/TKB trực tiếp vào Google Calendar với màu sắc tuỳ chọn.</p>
-
-    <div class="form-group">
-        <label>1. Nhập thông tin cấu hình Google API</label>
-        <input type="text" id="clientId" placeholder="Nhập OAuth Client ID của bạn">
-        <input type="text" id="apiKey" placeholder="Nhập API Key của bạn" style="margin-top: 6px;">
-    </div>
-
-    <div class="form-group">
-        <button class="btn btn-google" onclick="handleAuthClick()"><i class="fa-brands fa-google"></i> Đăng nhập & Cấp quyền Google</button>
-    </div>
-
-    <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;">
-
-    <h3>2. Thông tin môn học & Màu sắc</h3>
-    <div class="form-group">
-        <label>Tên môn học</label>
-        <input type="text" id="subjectName" value="Đại số Tuyến tính">
-    </div>
-    <div class="form-group">
-        <label>Loại thi</label>
-        <select id="examType">
-            <option value="GK">Giữa Kỳ (GK)</option>
-            <option value="CK">Cuối Kỳ (CK)</option>
-        </select>
-    </div>
-    <div class="form-group">
-        <label>Chọn Màu Google Calendar (`colorId`):</label>
-        <div class="color-picker" id="colorPicker">
-            <!-- 11 mã màu chuẩn của Google Calendar API -->
-            <div class="color-box selected" style="background:#7986cb;" data-id="1" title="Lavender"></div>
-            <div class="color-box" style="background:#33b679;" data-id="2" title="Sage"></div>
-            <div class="color-box" style="background:#8e24aa;" data-id="3" title="Grape"></div>
-            <div class="color-box" style="background:#e67c73;" data-id="4" title="Flamingo"></div>
-            <div class="color-box" style="background:#f6bf26;" data-id="5" title="Banana"></div>
-            <div class="color-box" style="background:#f4511e;" data-id="6" title="Tangerine"></div>
-            <div class="color-box" style="background:#039be5;" data-id="7" title="Peacock"></div>
-            <div class="color-box" style="background:#616161;" data-id="8" title="Graphite"></div>
-            <div class="color-box" style="background:#3f51b5;" data-id="9" title="Blueberry"></div>
-            <div class="color-box" style="background:#0b8043;" data-id="10" title="Basil"></div>
-            <div class="color-box" style="background:#d50000;" data-id="11" title="Tomato"></div>
+    <div class="header">
+        <div class="header-title">
+            <i class="fa-solid fa-calendar-days fa-2x"></i>
+            <div>
+                <h1>BKalendar Pro</h1>
+                <p>Công cụ trích xuất Lịch thi & TKB Bách Khoa HCMUT chuẩn định dạng</p>
+            </div>
         </div>
     </div>
 
-    <div class="form-group" style="margin-top: 20px;">
-        <button class="btn" onclick="syncToGoogleCalendar()"><i class="fa-solid fa-cloud-arrow-up"></i> Đẩy Trực Tiếp Lên Google Calendar</button>
+    <!-- Ô Dán Dữ Liệu Từ MyBK -->
+    <div class="card">
+        <div class="card-title">
+            <i class="fa-solid fa-paste"></i>
+            1. Dán bảng dữ liệu từ MyBK
+        </div>
+        <div class="alert-info">
+            <i class="fa-solid fa-circle-info"></i>
+            Mở MyBK -> Ctrl + A -> Ctrl + C lịch thi / TKB -> Dán (Ctrl + V) vào ô bên dưới.
+        </div>
+        <div class="input-group">
+            <textarea id="rawInput" placeholder="Dán văn bản lịch từ MyBK vào đây...
+Ví dụ:
+20261	MT1007 - Đại số Tuyến tính	L04_A_Ktr	2026-10-12	GK	BK-CS2	H3-401	2	13g00	50"></textarea>
+        </div>
+        <div class="btn-group">
+            <button class="btn" onclick="parseMyBKData()"><i class="fa-solid fa-wand-magic-sparkles"></i> Phân tích ngay</button>
+            <button class="btn btn-outline" onclick="clearData()"><i class="fa-solid fa-trash"></i> Xóa sạch</button>
+        </div>
     </div>
 
-    <div id="statusBox" class="status" style="display: none;"></div>
+    <!-- Ô Nhập Liệu Tự Do -->
+    <div class="card">
+        <div class="card-title">
+            <i class="fa-solid fa-pen-to-square"></i>
+            2. Thêm môn học / Buổi thi tự do
+        </div>
+        <div class="form-row">
+            <div>
+                <label>Học kỳ</label>
+                <input type="text" id="customTerm" value="20261">
+            </div>
+            <div>
+                <label>Mã & Tên môn học</label>
+                <input type="text" id="customSubject" placeholder="MT1007 - Đại số Tuyến tính">
+            </div>
+            <div>
+                <label>Loại thi</label>
+                <select id="customType">
+                    <option value="GK">Giữa Kỳ (GK)</option>
+                    <option value="CK">Cuối Kỳ (CK)</option>
+                    <option value="KTR">Kiểm Tra (KTR)</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-row">
+            <div>
+                <label>Ngày thi (YYYY-MM-DD)</label>
+                <input type="date" id="customDate">
+            </div>
+            <div>
+                <label>Giờ bắt đầu (HH:MM)</label>
+                <input type="time" id="customTime" value="13:00">
+            </div>
+            <div>
+                <label>Thời lượng (Phút)</label>
+                <input type="number" id="customDuration" value="50">
+            </div>
+        </div>
+        <div class="form-row">
+            <div>
+                <label>Mã phòng</label>
+                <input type="text" id="customRoom" placeholder="H3-401">
+            </div>
+            <div>
+                <label>Cơ sở</label>
+                <input type="text" id="customCampus" value="BK-CS2">
+            </div>
+            <div>
+                <label>Nhóm lớp</label>
+                <input type="text" id="customGroup" placeholder="L04_A_Ktr">
+            </div>
+        </div>
+        <button class="btn btn-outline" onclick="addCustomEvent()"><i class="fa-solid fa-plus"></i> Thêm vào danh sách</button>
+    </div>
+
+    <!-- Danh Sách & Xuất File -->
+    <div class="card" id="resultCard" style="display:none;">
+        <div class="card-title" style="justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+            <span><i class="fa-solid fa-list-check"></i> Danh sách sự kiện (<span id="eventCount">0</span>)</span>
+            <div class="btn-group">
+                <button class="btn btn-success" onclick="downloadAllICS()">
+                    <i class="fa-solid fa-file-arrow-down"></i> Tải File <span id="fileNameBadge">LoaiThi-HocKy.ics</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="sync-box">
+            <i class="fa-solid fa-rotate" style="color:var(--primary)"></i> <strong>Mẹo Tự Động Đồng Bộ Với Google Calendar:</strong><br>
+            1. Tải file <code>.ics</code> này lên Repository GitHub này.<br>
+            2. Đường link file sẽ có dạng: <code>https://bentphcm2008-dotcom.github.io/toiyeuut/<span id="fileNameText">GK-20261.ics</span></code><br>
+            3. Vào Google Calendar -> Bấm dấu <strong>+</strong> cạnh <em>Lịch khác (Other calendars)</em> -> Chọn <strong>Từ URL (From URL)</strong> -> Dán đường link trên vào. Mọi thay đổi sau này trên file này sẽ tự động cập nhật!
+        </div>
+
+        <div class="event-list" id="eventList"></div>
+    </div>
 </div>
 
 <script>
-    let tokenClient;
-    let gapiInited = false;
-    let gsiInited = false;
-    let selectedColorId = "1";
+    let eventsList = [];
 
-    // Chọn màu trong giao diện
-    document.querySelectorAll('.color-box').forEach(box => {
-        box.addEventListener('click', function() {
-            document.querySelectorAll('.color-box').forEach(b => b.classList.remove('selected'));
-            this.classList.add('selected');
-            selectedColorId = this.getAttribute('data-id');
-        });
-    });
-
-    function showStatus(msg) {
-        const box = document.getElementById('statusBox');
-        box.style.display = 'block';
-        box.innerText = msg;
+    function formatTitle(subjectName, examType) {
+        return `${subjectName} - [${examType}]`;
     }
 
-    // Khởi tạo thư viện Google
-    function gapiLoaded() {
-        gapi.load('client', async () => {
-            await gapi.client.init({
-                discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"],
-            });
-            gapiInited = true;
-        });
-    }
-
-    function gisLoaded() {
-        gsiInited = true;
-    }
-
-    window.onload = () => {
-        gapiLoaded();
-        gisLoaded();
-    };
-
-    function handleAuthClick() {
-        const CLIENT_ID = document.getElementById('clientId').value.trim();
-        const API_KEY = document.getElementById('apiKey').value.trim();
-
-        if(!CLIENT_ID || !API_KEY) {
-            alert('Vui lòng nhập OAuth Client ID và API Key trước!');
+    function parseMyBKData() {
+        const rawText = document.getElementById('rawInput').value.trim();
+        if (!rawText) {
+            alert('Vui lòng dán dữ liệu lịch thi từ MyBK trước!');
             return;
         }
 
-        gapi.client.setApiKey(API_KEY);
+        const lines = rawText.split('\n');
+        let addedCount = 0;
+        let skippedCount = 0;
+        const seenKeys = new Set();
 
-        tokenClient = google.accounts.oauth2.initTokenClient({
-            client_id: CLIENT_ID,
-            scope: 'https://www.googleapis.com/auth/calendar',
-            callback: async (resp) => {
-                if (resp.error !== undefined) {
-                    throw (resp);
+        eventsList.forEach(e => seenKeys.add(e.uniqueKey));
+
+        lines.forEach(line => {
+            line = line.trim();
+            if (!line) return;
+
+            const examMatch = line.match(/^(\d+)\s+([A-Z0-9]+\s*-\s*[^	\n]+?)\s+([A-Z0-9_]+)\s+(\d{4}-\d{2}-\d{2})\s+([A-Za-z0-9]+)\s+([A-Za-z0-9-]+)\s+([A-Za-z0-9-]+)\s+(\d+)\s+(\d{1,2}g\d{2}|\d{1,2}:\d{2})\s+(\d+)/i);
+
+            if (examMatch) {
+                const term = examMatch[1];
+                const subject = examMatch[2].trim();
+                const group = examMatch[3];
+                const date = examMatch[4];
+                const examType = examMatch[5];
+                const campus = examMatch[6];
+                const room = examMatch[7];
+                const timeStr = examMatch[9].replace('g', ':');
+                const duration = parseInt(examMatch[10]) || 50;
+
+                const uniqueKey = `${subject}_${date}_${timeStr}_${room}_${examType}`.toLowerCase();
+
+                if (seenKeys.has(uniqueKey)) {
+                    skippedCount++;
+                    return;
                 }
-                showStatus('Đăng nhập thành công! Bạn có thể nhấn Đẩy Trực Tiếp.');
-            },
+
+                seenKeys.add(uniqueKey);
+                addedCount++;
+
+                const subParts = subject.split('-');
+                const subCode = subParts[0] ? subParts[0].trim() : "";
+                const subName = subParts[1] ? subParts[1].trim() : subject;
+
+                eventsList.push({
+                    uniqueKey: uniqueKey,
+                    term: term,
+                    subjectCode: subCode,
+                    subjectName: subName,
+                    fullSubject: subject,
+                    group: group,
+                    date: date,
+                    examType: examType,
+                    campus: campus,
+                    room: room,
+                    time: timeStr.length === 4 ? '0' + timeStr : timeStr,
+                    duration: duration
+                });
+            }
         });
 
-        if (gapi.client.getToken() === null) {
-            tokenClient.requestAccessToken({prompt: 'consent'});
+        if (addedCount === 0 && skippedCount === 0) {
+            alert('Không tìm thấy dòng dữ liệu lịch thi phù hợp. Vui lòng kiểm tra lại định dạng!');
         } else {
-            tokenClient.requestAccessToken({prompt: ''});
+            alert(`Đã thêm thành công ${addedCount} môn thi!` + (skippedCount > 0 ? ` (Tự động lọc bỏ ${skippedCount} dòng bị trùng)` : ''));
+            renderEvents();
         }
     }
 
-    async function syncToGoogleCalendar() {
-        if (!gapi.client.getToken()) {
-            alert('Vui lòng Đăng nhập & Cấp quyền Google trước!');
+    function addCustomEvent() {
+        const term = document.getElementById('customTerm').value.trim();
+        const subject = document.getElementById('customSubject').value.trim();
+        const examType = document.getElementById('customType').value;
+        const date = document.getElementById('customDate').value;
+        const time = document.getElementById('customTime').value;
+        const duration = parseInt(document.getElementById('customDuration').value) || 50;
+        const room = document.getElementById('customRoom').value.trim();
+        const campus = document.getElementById('customCampus').value.trim();
+        const group = document.getElementById('customGroup').value.trim();
+
+        if (!subject || !date || !time) {
+            alert('Vui lòng nhập đầy đủ Tên môn, Ngày thi và Giờ thi!');
             return;
         }
 
-        const subjectName = document.getElementById('subjectName').value;
-        const examType = document.getElementById('examType').value;
-        const summary = `${subjectName} - [${examType}]`;
+        const subParts = subject.split('-');
+        const subCode = subParts[0] ? subParts[0].trim() : "";
+        const subName = subParts[1] ? subParts[1].trim() : subject;
 
-        showStatus('Đang tạo sự kiện...');
+        const uniqueKey = `${subject}_${date}_${time}_${room}_${examType}`.toLowerCase();
 
-        // Cấu hình sự kiện kèm tham số colorId
-        const event = {
-            'summary': summary,
-            'location': 'Phòng H3-401, BK-CS2',
-            'description': 'Lịch thi tạo từ BKalendar Pro',
-            'start': {
-                'dateTime': '2026-10-12T13:00:00+07:00',
-                'timeZone': 'Asia/Ho_Chi_Minh'
-            },
-            'end': {
-                'dateTime': '2026-10-12T13:50:00+07:00',
-                'timeZone': 'Asia/Ho_Chi_Minh'
-            },
-            'colorId': selectedColorId // Mã màu (1 -> 11) được truyền trực tiếp qua API
-        };
+        eventsList.push({
+            uniqueKey: uniqueKey,
+            term: term,
+            subjectCode: subCode,
+            subjectName: subName,
+            fullSubject: subject,
+            group: group,
+            date: date,
+            examType: examType,
+            campus: campus,
+            room: room,
+            time: time,
+            duration: duration
+        });
 
-        try {
-            const request = gapi.client.calendar.events.insert({
-                'calendarId': 'primary', // Thêm vào lịch chính của tài khoản
-                'resource': event
-            });
+        renderEvents();
+    }
 
-            request.execute(function(eventResponse) {
-                if(eventResponse.htmlLink) {
-                    showStatus('Thành công! Sự kiện đã được tạo trên Google Calendar với đúng màu sắc chọn. Mở link: ' + eventResponse.htmlLink);
-                } else {
-                    showStatus('Lỗi khi tạo sự kiện: ' + JSON.stringify(eventResponse));
-                }
-            });
-        } catch (err) {
-            showStatus('Lỗi kết nối API: ' + err.message);
+    function removeEvent(index) {
+        eventsList.splice(index, 1);
+        renderEvents();
+    }
+
+    function clearData() {
+        document.getElementById('rawInput').value = '';
+        eventsList = [];
+        renderEvents();
+    }
+
+    function getDynamicFileName() {
+        if (eventsList.length === 0) return 'Lich_Thi.ics';
+        const sample = eventsList[0];
+        const examType = sample.examType || 'LichThi';
+        const term = sample.term || 'BK';
+        return `${examType}-${term}.ics`;
+    }
+
+    function renderEvents() {
+        const listEl = document.getElementById('eventList');
+        const countEl = document.getElementById('eventCount');
+        const resultCard = document.getElementById('resultCard');
+
+        listEl.innerHTML = '';
+        countEl.innerText = eventsList.length;
+
+        if (eventsList.length === 0) {
+            resultCard.style.display = 'none';
+            return;
         }
+
+        const fileName = getDynamicFileName();
+        document.getElementById('fileNameBadge').innerText = fileName;
+        document.getElementById('fileNameText').innerText = fileName;
+
+        resultCard.style.display = 'block';
+
+        eventsList.forEach((item, index) => {
+            // Đã đổi định dạng tiêu đề thành: Tên môn - [Loại thi]
+            const title = formatTitle(item.subjectName, item.examType);
+            const location = `Phòng ${item.room}, ${item.campus}`;
+
+            const itemEl = document.createElement('div');
+            itemEl.className = 'event-item';
+
+            itemEl.innerHTML = `
+                <div class="event-info">
+                    <h4>${title}</h4>
+                    <div class="event-meta">
+                        <span><i class="fa-regular fa-calendar"></i> ${item.date}</span>
+                        <span><i class="fa-regular fa-clock"></i> ${item.time} (${item.duration} phút)</span>
+                        <span><i class="fa-solid fa-location-dot"></i> ${location}</span>
+                        <span class="badge">${item.group || 'N/A'}</span>
+                    </div>
+                </div>
+                <div class="action-btns">
+                    <button class="btn-icon" onclick="removeEvent(${index})" title="Xóa"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `;
+            listEl.appendChild(itemEl);
+        });
+    }
+
+    function downloadAllICS() {
+        if (eventsList.length === 0) return;
+
+        const sample = eventsList[0];
+        const calName = `${sample.examType} - ${sample.term}`;
+
+        let icsContent = [
+            'BEGIN:VCALENDAR',
+            'VERSION:2.0',
+            'PRODID:-//BKalendar Pro HCMUT//VN',
+            `X-WR-CALNAME:${calName}`,
+            'CALSCALE:GREGORIAN',
+            'METHOD:PUBLISH'
+        ];
+
+        eventsList.forEach((item, idx) => {
+            // Tiêu đề trong file ICS cũng đổi theo dạng Tên môn - [Loại thi]
+            const title = formatTitle(item.subjectName, item.examType);
+            const location = `Phòng ${item.room}, ${item.campus}`;
+            const description = `MÃ PHÒNG: ${item.room}\\nCơ sở: ${item.campus}\\nNhóm/Loại: ${item.group}\\nThời lượng: ${item.duration} phút\\nGhi chú: Loại thi: ${item.examType} - Nhóm: ${item.group}`;
+
+            const startDT = new Date(`${item.date}T${item.time}:00`);
+            const endDT = new Date(startDT.getTime() + item.duration * 60000);
+
+            const formatICSTime = (d) => {
+                return d.getUTCFullYear() +
+                    String(d.getUTCMonth() + 1).padStart(2, '0') +
+                    String(d.getUTCDate()).padStart(2, '0') + 'T' +
+                    String(d.getUTCHours()).padStart(2, '0') +
+                    String(d.getUTCMinutes()).padStart(2, '0') +
+                    String(d.getUTCSeconds()).padStart(2, '0') + 'Z';
+            };
+
+            const uid = `bkalendar-${Date.now()}-${idx}@hcmut.edu.vn`;
+
+            icsContent.push(
+                'BEGIN:VEVENT',
+                `UID:${uid}`,
+                `DTSTAMP:${formatICSTime(new Date())}`,
+                `DTSTART:${formatICSTime(startDT)}`,
+                `DTEND:${formatICSTime(endDT)}`,
+                `SUMMARY:${title}`,
+                `LOCATION:${location}`,
+                `DESCRIPTION:${description}`,
+                'STATUS:CONFIRMED',
+                'END:VEVENT'
+            );
+        });
+
+        icsContent.push('END:VCALENDAR');
+
+        const fileName = getDynamicFileName();
+        const blob = new Blob([icsContent.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.setAttribute('download', fileName);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 </script>
 
